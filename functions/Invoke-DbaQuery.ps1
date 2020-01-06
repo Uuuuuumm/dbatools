@@ -127,165 +127,165 @@ function Invoke-DbaQuery {
     )
 
     begin {
-        Write-Message -Level Debug -Message "Bound parameters: $($PSBoundParameters.Keys -join ", ")"
+        #Write-Message -Level Debug -Message "Bound parameters: $($PSBoundParameters.Keys -join ", ")"
 
         $splatInvokeDbaSqlAsync = @{
             As = $As
         }
 
-        if (Test-Bound -ParameterName "SqlParameters") {
-            $splatInvokeDbaSqlAsync["SqlParameters"] = $SqlParameters
-        }
-        if (Test-Bound -ParameterName "AppendServerInstance") {
-            $splatInvokeDbaSqlAsync["AppendServerInstance"] = $AppendServerInstance
-        }
-        if (Test-Bound -ParameterName "Query") {
-            $splatInvokeDbaSqlAsync["Query"] = $Query
-        }
-        if (Test-Bound -ParameterName "QueryTimeout") {
-            $splatInvokeDbaSqlAsync["QueryTimeout"] = $QueryTimeout
-        }
-        if (Test-Bound -ParameterName "MessagesToOutput") {
-            $splatInvokeDbaSqlAsync["MessagesToOutput"] = $MessagesToOutput
-        }
-        if (Test-Bound -ParameterName "Verbose") {
-            $splatInvokeDbaSqlAsync["Verbose"] = $Verbose
-        }
+        # if (Test-Bound -ParameterName "SqlParameters") {
+        #     $splatInvokeDbaSqlAsync["SqlParameters"] = $SqlParameters
+        # }
+        # if (Test-Bound -ParameterName "AppendServerInstance") {
+        #     $splatInvokeDbaSqlAsync["AppendServerInstance"] = $AppendServerInstance
+        # }
+        # if (Test-Bound -ParameterName "Query") {
+        #     $splatInvokeDbaSqlAsync["Query"] = $Query
+        # }
+        # if (Test-Bound -ParameterName "QueryTimeout") {
+        #     $splatInvokeDbaSqlAsync["QueryTimeout"] = $QueryTimeout
+        # }
+        # if (Test-Bound -ParameterName "MessagesToOutput") {
+        #     $splatInvokeDbaSqlAsync["MessagesToOutput"] = $MessagesToOutput
+        # }
+        # if (Test-Bound -ParameterName "Verbose") {
+        #     $splatInvokeDbaSqlAsync["Verbose"] = $Verbose
+        # }
 
 
-        if (Test-Bound -ParameterName "File") {
-            $files = @()
-            $temporaryFiles = @()
-            $temporaryFilesCount = 0
-            $temporaryFilesPrefix = (97 .. 122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }) -join ''
-
-            foreach ($item in $File) {
-                if ($null -eq $item) { continue }
-
-                $type = $item.GetType().FullName
-
-                switch ($type) {
-                    "System.IO.DirectoryInfo" {
-                        if (-not $item.Exists) {
-                            Stop-Function -Message "Directory not found" -Category ObjectNotFound
-                            return
-                        }
-                        $files += ($item.GetFiles() | Where-Object Extension -EQ ".sql").FullName
-
-                    }
-                    "System.IO.FileInfo" {
-                        if (-not $item.Exists) {
-                            Stop-Function -Message "Directory not found." -Category ObjectNotFound
-                            return
-                        }
-
-                        $files += $item.FullName
-                    }
-                    "System.String" {
-                        if (Test-PsVersion -Is 3) {
-                            $uri = [uri]$item
-                        } else {
-                            $uri = [uri]::New($item)
-                        }
-
-                        switch -regex ($uri.Scheme) {
-                            "http" {
-                                $tempfile = "$(Get-DbatoolsPath -Name temp)\$temporaryFilesPrefix-$temporaryFilesCount.sql"
-                                try {
-                                    try {
-                                        Invoke-TlsWebRequest -Uri $item -OutFile $tempfile -ErrorAction Stop
-                                    } catch {
-                                        (New-Object System.Net.WebClient).Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
-                                        Invoke-TlsWebRequest -Uri $item -OutFile $tempfile -ErrorAction Stop
-                                    }
-                                    $files += $tempfile
-                                    $temporaryFilesCount++
-                                    $temporaryFiles += $tempfile
-                                } catch {
-                                    Stop-Function -Message "Failed to download file $item" -ErrorRecord $_
-                                    return
-                                }
-                            }
-                            default {
-                                try {
-                                    $paths = Resolve-Path $item | Select-Object -ExpandProperty Path | Get-Item -ErrorAction Stop
-                                } catch {
-                                    Stop-Function -Message "Failed to resolve path: $item" -ErrorRecord $_
-                                    return
-                                }
-
-                                foreach ($path in $paths) {
-                                    if (-not $path.PSIsContainer) {
-                                        if (Test-PsVersion -Is 3) {
-                                            if (([uri]$path.FullName).Scheme -ne 'file') {
-                                                Stop-Function -Message "Could not resolve path $path as filesystem object"
-                                                return
-                                            }
-                                        } else {
-                                            if ([uri]::New($path).Scheme -ne 'file') {
-                                                Stop-Function -Message "Could not resolve path $path as filesystem object"
-                                                return
-                                            }
-                                        }
-                                        $files += $path.FullName
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    default {
-                        Stop-Function -Message "Unkown input type: $type" -Category InvalidArgument
-                        return
-                    }
-                }
-            }
-        }
-
-        if (Test-Bound -ParameterName "SqlObject") {
-            $files = @()
-            $temporaryFiles = @()
-            $temporaryFilesCount = 0
-            $temporaryFilesPrefix = (97 .. 122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }) -join ''
-
-            foreach ($object in $SqlObject) {
-                try { $code = Export-DbaScript -InputObject $object -Passthru -EnableException }
-                catch {
-                    Stop-Function -Message "Failed to generate script for object $object" -ErrorRecord $_
-                    return
-                }
-
-                try {
-                    $newfile = "$(Get-DbatoolsPath -Name temp)\$temporaryFilesPrefix-$temporaryFilesCount.sql"
-                    Set-Content -Value $code -Path $newfile -Force -ErrorAction Stop -Encoding UTF8
-                    $files += $newfile
-                    $temporaryFilesCount++
-                    $temporaryFiles += $newfile
-                } catch {
-                    Stop-Function -Message "Failed to write sql script to temp" -ErrorRecord $_
-                    return
-                }
-            }
-        }
-    }
+    #     if (Test-Bound -ParameterName "File") {
+    #         $files = @()
+    #         $temporaryFiles = @()
+    #         $temporaryFilesCount = 0
+    #         $temporaryFilesPrefix = (97 .. 122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }) -join ''
+    #
+    #         foreach ($item in $File) {
+    #             if ($null -eq $item) { continue }
+    #
+    #             $type = $item.GetType().FullName
+    #
+    #             switch ($type) {
+    #                 "System.IO.DirectoryInfo" {
+    #                     if (-not $item.Exists) {
+    #                         Stop-Function -Message "Directory not found" -Category ObjectNotFound
+    #                         return
+    #                     }
+    #                     $files += ($item.GetFiles() | Where-Object Extension -EQ ".sql").FullName
+    #
+    #                 }
+    #                 "System.IO.FileInfo" {
+    #                     if (-not $item.Exists) {
+    #                         Stop-Function -Message "Directory not found." -Category ObjectNotFound
+    #                         return
+    #                     }
+    #
+    #                     $files += $item.FullName
+    #                 }
+    #                 "System.String" {
+    #                     if (Test-PsVersion -Is 3) {
+    #                         $uri = [uri]$item
+    #                     } else {
+    #                         $uri = [uri]::New($item)
+    #                     }
+    #
+    #                     switch -regex ($uri.Scheme) {
+    #                         "http" {
+    #                             $tempfile = "$(Get-DbatoolsPath -Name temp)\$temporaryFilesPrefix-$temporaryFilesCount.sql"
+    #                             try {
+    #                                 try {
+    #                                     Invoke-TlsWebRequest -Uri $item -OutFile $tempfile -ErrorAction Stop
+    #                                 } catch {
+    #                                     (New-Object System.Net.WebClient).Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+    #                                     Invoke-TlsWebRequest -Uri $item -OutFile $tempfile -ErrorAction Stop
+    #                                 }
+    #                                 $files += $tempfile
+    #                                 $temporaryFilesCount++
+    #                                 $temporaryFiles += $tempfile
+    #                             } catch {
+    #                                 Stop-Function -Message "Failed to download file $item" -ErrorRecord $_
+    #                                 return
+    #                             }
+    #                         }
+    #                         default {
+    #                             try {
+    #                                 $paths = Resolve-Path $item | Select-Object -ExpandProperty Path | Get-Item -ErrorAction Stop
+    #                             } catch {
+    #                                 Stop-Function -Message "Failed to resolve path: $item" -ErrorRecord $_
+    #                                 return
+    #                             }
+    #
+    #                             foreach ($path in $paths) {
+    #                                 if (-not $path.PSIsContainer) {
+    #                                     if (Test-PsVersion -Is 3) {
+    #                                         if (([uri]$path.FullName).Scheme -ne 'file') {
+    #                                             Stop-Function -Message "Could not resolve path $path as filesystem object"
+    #                                             return
+    #                                         }
+    #                                     } else {
+    #                                         if ([uri]::New($path).Scheme -ne 'file') {
+    #                                             Stop-Function -Message "Could not resolve path $path as filesystem object"
+    #                                             return
+    #                                         }
+    #                                     }
+    #                                     $files += $path.FullName
+    #                                 }
+    #                             }
+    #                         }
+    #                     }
+    #                 }
+    #                 default {
+    #                     Stop-Function -Message "Unkown input type: $type" -Category InvalidArgument
+    #                     return
+    #                 }
+    #             }
+    #         }
+    #     }
+    #
+    #     if (Test-Bound -ParameterName "SqlObject") {
+    #         $files = @()
+    #         $temporaryFiles = @()
+    #         $temporaryFilesCount = 0
+    #         $temporaryFilesPrefix = (97 .. 122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }) -join ''
+    #
+    #         foreach ($object in $SqlObject) {
+    #             try { $code = Export-DbaScript -InputObject $object -Passthru -EnableException }
+    #             catch {
+    #                 Stop-Function -Message "Failed to generate script for object $object" -ErrorRecord $_
+    #                 return
+    #             }
+    #
+    #             try {
+    #                 $newfile = "$(Get-DbatoolsPath -Name temp)\$temporaryFilesPrefix-$temporaryFilesCount.sql"
+    #                 Set-Content -Value $code -Path $newfile -Force -ErrorAction Stop -Encoding UTF8
+    #                 $files += $newfile
+    #                 $temporaryFilesCount++
+    #                 $temporaryFiles += $newfile
+    #             } catch {
+    #                 Stop-Function -Message "Failed to write sql script to temp" -ErrorRecord $_
+    #                 return
+    #             }
+    #         }
+    #     }
+    # }
 
     process {
-        if (Test-FunctionInterrupt) { return }
-        if (Test-Bound -ParameterName "Database", "InputObject" -And) {
-            Stop-Function -Category InvalidArgument -Message "You can't use -Database with piped databases"
-            return
-        }
-        if (Test-Bound -ParameterName "SqlInstance", "InputObject" -And) {
-            Stop-Function -Category InvalidArgument -Message "You can't use -SqlInstance with piped databases"
-            return
-        }
-        if (Test-Bound -ParameterName "SqlInstance", "InputObject" -Not) {
-            Stop-Function -Category InvalidArgument -Message "Please provide either SqlInstance or InputObject"
-            return
-        }
+        # if (Test-FunctionInterrupt) { return }
+        # if (Test-Bound -ParameterName "Database", "InputObject" -And) {
+        #     Stop-Function -Category InvalidArgument -Message "You can't use -Database with piped databases"
+        #     return
+        # }
+        # if (Test-Bound -ParameterName "SqlInstance", "InputObject" -And) {
+        #     Stop-Function -Category InvalidArgument -Message "You can't use -SqlInstance with piped databases"
+        #     return
+        # }
+        # if (Test-Bound -ParameterName "SqlInstance", "InputObject" -Not) {
+        #     Stop-Function -Category InvalidArgument -Message "Please provide either SqlInstance or InputObject"
+        #     return
+        # }
 
         foreach ($db in $InputObject) {
             if (!$db.IsAccessible) {
-                Write-Message -Level Warning -Message "Database $db is not accessible. Skipping."
+                #Write-Message -Level Warning -Message "Database $db is not accessible. Skipping."
                 continue
             }
             $server = $db.Parent

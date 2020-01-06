@@ -91,8 +91,8 @@ function ConvertTo-DbaDataTable {
     )
 
     begin {
-        Write-Message -Level Debug -Message "Bound parameters: $($PSBoundParameters.Keys -join ", ")"
-        Write-Message -Level Debug -Message "TimeSpanType = $TimeSpanType | SizeType = $SizeType"
+        #Write-Message -Level Debug -Message "Bound parameters: $($PSBoundParameters.Keys -join ", ")"
+        #Write-Message -Level Debug -Message "TimeSpanType = $TimeSpanType | SizeType = $SizeType"
 
         function Convert-Type {
             # This function will check so that the type is an accepted type which could be used when inserting into a table.
@@ -368,10 +368,10 @@ function ConvertTo-DbaDataTable {
 
                                     $datarow.Item($property.Name) = $newColumn.Value
                                 } catch {
-                                    Stop-Function -Message "Failed to add property $($property.Name) from $object" -ErrorRecord $_ -Target $object
+                                #    Stop-Function -Message "Failed to add property $($property.Name) from $object" -ErrorRecord $_ -Target $object
                                 }
                             } else {
-                                Stop-Function -Message "Failed to add property $($property.Name) from $object" -ErrorRecord $_ -Target $object
+                                #Stop-Function -Message "Failed to add property $($property.Name) from $object" -ErrorRecord $_ -Target $object
                             }
                         }
                     }
@@ -389,7 +389,7 @@ function ConvertTo-DbaDataTable {
         }
     }
     end {
-        Write-Message -Level InternalComment -Message "Finished."
+        #Write-Message -Level InternalComment -Message "Finished."
         , $datatable
     }
 }

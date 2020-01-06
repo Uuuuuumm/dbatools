@@ -222,7 +222,7 @@ function Write-DbaDbTableData {
                 [string]$Fqtn = $fqtn,
                 $BulkCopy = $bulkCopy
             )
-            Write-Message -Level Verbose -Message "Importing in bulk to $fqtn"
+            #Write-Message -Level Verbose -Message "Importing in bulk to $fqtn"
 
             $rowCount = $DataTable.Rows.Count
             if ($rowCount -eq 0) {
@@ -286,7 +286,7 @@ function Write-DbaDbTableData {
                 [switch]$EnableException
             )
 
-            Write-Message -Level Verbose -Message "Creating table for $fqtn"
+            #Write-Message -Level Verbose -Message "Creating table for $fqtn"
 
             # Get SQL datatypes by best guess on first data row
             $sqlDataTypes = @();
@@ -329,7 +329,7 @@ function Write-DbaDbTableData {
 
             $sql = "BEGIN CREATE TABLE $fqtn ($($sqlDataTypes -join ' NULL,')) END"
 
-            Write-Message -Level Debug -Message $sql
+            #Write-Message -Level Debug -Message $sql
 
             if ($Pscmdlet.ShouldProcess($SqlInstance, "Creating table $Fqtn")) {
                 try {
@@ -387,20 +387,20 @@ function Write-DbaDbTableData {
             return
         }
 
-        if (Test-Bound -ParameterName Database) {
-            if ($null -eq $fqtnObj.Database) {
-                $databaseName = "$Database"
-            } else {
-                if ($fqtnObj.Database -eq $Database) {
-                    $databaseName = "$Database"
-                } else {
-                    Stop-Function -Message "The database parameter $($Database) differs from value from the fully qualified table name $($fqtnObj.Database)."
-                    return
-                }
-            }
-        } else {
+        #if (Test-Bound -ParameterName Database) {
+        #    if ($null -eq $fqtnObj.Database) {
+        #        $databaseName = "$Database"
+        #    } else {
+        #        if ($fqtnObj.Database -eq $Database) {
+        #            $databaseName = "$Database"
+        #        } else {
+        #            Stop-Function -Message "The database parameter $($Database) differs from value from the fully qualified table name $($fqtnObj.Database)."
+        #            return
+        #        }
+        #    }
+        #} else {
             $databaseName = $fqtnObj.Database
-        }
+        #}
 
         if ($fqtnObj.Schema) {
             $schemaName = $fqtnObj.Schema
@@ -437,7 +437,7 @@ function Write-DbaDbTableData {
         [void]$quotedFQTN.Append( ']' )
 
         $fqtn = $quotedFQTN.ToString()
-        Write-Message -Level SomewhatVerbose -Message "FQTN processed: $fqtn"
+        #Write-Message -Level SomewhatVerbose -Message "FQTN processed: $fqtn"
         #endregion Resolve Full Qualified Table Name
 
         #region Connect to server and get database
@@ -502,10 +502,10 @@ function Write-DbaDbTableData {
         if ($Truncate -eq $true) {
             if ($Pscmdlet.ShouldProcess($SqlInstance, "Truncating $fqtn")) {
                 try {
-                    Write-Message -Level Verbose -Message "Truncating $fqtn."
+                    #Write-Message -Level Verbose -Message "Truncating $fqtn."
                     $null = $server.Databases[$databaseName].Query("TRUNCATE TABLE $fqtn")
                 } catch {
-                    Write-Message -Level Warning -Message "Could not truncate $fqtn. Table may not exist or may have key constraints." -ErrorRecord $_
+                    #Write-Message -Level Warning -Message "Could not truncate $fqtn. Table may not exist or may have key constraints." -ErrorRecord $_
                 }
             }
         }
@@ -594,7 +594,7 @@ function Write-DbaDbTableData {
         #endregion ConvertTo-DbaDataTable wrapper
     }
     process {
-        if (Test-FunctionInterrupt) { return }
+        #if (Test-FunctionInterrupt) { return }
 
         if ($null -ne $InputObject) { $inputType = $InputObject.GetType() }
         else { $inputType = $null }
